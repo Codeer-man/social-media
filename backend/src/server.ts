@@ -1,13 +1,16 @@
 import app from "./app";
 import http from "http";
+import connectToDB from "./config/db";
 
 const PORT = process.env.PORT;
 
 async function startServer() {
+  connectToDB();
+
   const server = http.createServer(app);
 
   server.listen(PORT, () => {
-    console.log(`Server running in port http://${PORT}`);
+    console.log(`Server running in port http://localhost:${PORT}`);
   });
 }
 
