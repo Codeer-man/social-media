@@ -9,21 +9,24 @@ import {
   verifyEmailHandler,
 } from "../../controller/auth/auth.controller";
 import authRequired from "../../middleware/authRequire";
-import { roleRequire } from "../../middleware/roleRequired";
+import {
+  getGoogleAuthHandler,
+  googleAuthCallbackHanlder,
+} from "../../controller/auth/googleAuth.controller";
 
 const router = express.Router();
 
 router.post("/register", registerHanlder);
 router.post("/login", loginHandler);
-router.get("/verfy-email", authRequired, roleRequire, verifyEmailHandler);
+router.get("/verify-email", verifyEmailHandler);
 router.get("/refresh-token", authRequired, refreshTokenHandler);
-router.get("logout", authRequired, roleRequire, logoutHandler);
-router.post(
-  "/forget-password",
-  authRequired,
-  roleRequire,
-  forgetPasswordHandler
-);
-router.post("/reset-password", authRequired, roleRequire, resetPasswordHandler);
+router.post("/logout", authRequired, logoutHandler);
 
+//forget pwd
+router.post("/forget-password", authRequired, forgetPasswordHandler);
+router.post("/reset-password", resetPasswordHandler);
+
+//google auth
+router.post("/google", getGoogleAuthHandler);
+router.get("/google/callback", googleAuthCallbackHanlder);
 export default router;

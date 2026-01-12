@@ -9,7 +9,7 @@ export default async function authRequired(
 ) {
   const authHeader = req.headers.authorization as string;
 
-  if (!authHeader || authHeader.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
       message: "Auth header is required",
     });

@@ -7,7 +7,7 @@ export function createAccessToken(
 ) {
   const payload = { sub: userId, role, tokenVersion };
 
-  return jwt.sign(payload, process.env.JWT_ACCESSS_SECRET!, {
+  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET!, {
     expiresIn: "30min",
   });
 }
@@ -36,13 +36,13 @@ export function verifyAccessToken(token: string) {
 }
 
 export function createVerifyToken(id: string) {
-  return jwt.sign(id, process.env.JWT_ACCESS_SECRET!, {
+  return jwt.sign({ id }, process.env.JWT_ACCESS_SECRET!, {
     expiresIn: "1d",
   });
 }
 
 export function verifyToken(token: string) {
   return jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as {
-    sub: string;
+    id: string;
   };
 }

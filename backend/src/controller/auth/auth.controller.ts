@@ -12,10 +12,7 @@ import {
 import crypto from "crypto";
 import { sendEmail } from "../../lib/email";
 import { resetPwdHTML } from "../../utils/resetPwdHtml";
-
-function getUrl() {
-  return process.env.APP_URL || `http://localhost:${process.env.PORT}`;
-}
+import getUrl from "../../lib/getUrl";
 
 export async function registerHanlder(req: Request, res: Response) {
   try {
@@ -28,7 +25,7 @@ export async function registerHanlder(req: Request, res: Response) {
       });
     }
 
-    const { email, password, confirmPassword } = result.data;
+    const { email, password } = result.data;
 
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -50,13 +47,11 @@ export async function registerHanlder(req: Request, res: Response) {
       isEmailVerified: false,
     });
 
-    await newlyCreatedUser.save();
-
     //verify email
 
     const verifyToken = createVerifyToken(newlyCreatedUser.id);
 
-    const verifyUrl = `${getUrl}/api/auth/verify-email?token=${verifyToken}`;
+    const verifyUrl = `${getUrl()}/api/auth/verify-email?token=${verifyToken}`;
 
     await sendEmail(
       newlyCreatedUser.email!,
@@ -76,8 +71,10 @@ export async function registerHanlder(req: Request, res: Response) {
       },
     });
   } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
-      message: "Invalid server error",
+      message: "Internal server error",
       error: error,
     });
   }
@@ -110,11 +107,23 @@ export async function loginHandler(req: Request, res: Response) {
 
     if (!pwd) {
       return res.status(400).json({
-        message: "The passwoed does not match",
+        message: "Incorrect password",
       });
     }
 
     if (!user.isEmailVerified) {
+      const verifyToken = createVerifyToken(user.id);
+
+      const verifyUrl = `${getUrl()}/api/auth/verify-email?token=${verifyToken}`;
+
+      await sendEmail(
+        user.email!,
+        "verify your Email",
+        `
+      <p>Pleaes verify your email </p>
+      <p><a href="${verifyUrl}"> ${verifyUrl} <a/> <p/>
+      `
+      );
       return res.status(403).json({
         message: "Your email is not verified",
       });
@@ -148,8 +157,10 @@ export async function loginHandler(req: Request, res: Response) {
       },
     });
   } catch (error) {
+    console.log(error);
+
     return res.status(500).json({
-      message: "Invalid server error",
+      message: "Internal server error",
       error: error,
     });
   }
@@ -167,7 +178,7 @@ export async function verifyEmailHandler(req: Request, res: Response) {
   try {
     const payload = verifyToken(token);
 
-    const user = await User.findById(payload.sub);
+    const user = await User.findById(payload.id);
 
     if (!user) {
       return res.status(400).json({
@@ -189,7 +200,7 @@ export async function verifyEmailHandler(req: Request, res: Response) {
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Invalid server error",
+      message: "Internal server error",
       error,
     });
   }
@@ -248,7 +259,7 @@ export async function refreshTokenHandler(req: Request, res: Response) {
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Invalid server error",
+      message: "Internal server error",
       error: error,
     });
   }
@@ -279,7 +290,7 @@ export async function forgetPasswordHandler(req: Request, res: Response) {
     if (!user) {
       return res.json({
         message:
-          "If an account with this email exist. We will send you a reset email",
+          "If an account with this email exist. We will send you a reset email try",
       });
     }
 
@@ -339,7 +350,7 @@ export async function resetPasswordHandler(req: Request, res: Response) {
 
     if (!user) {
       return res.status(400).json({
-        message: "Invalid or expired token",
+        message: "Internal or expired token",
       });
     }
 
@@ -358,7 +369,7 @@ export async function resetPasswordHandler(req: Request, res: Response) {
     console.error(error);
 
     return res.status(500).json({
-      message: "Invalid server error",
+      message: "Internal server error",
       error,
     });
   }
