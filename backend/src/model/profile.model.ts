@@ -4,19 +4,19 @@ const profileSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      require: true,
+      required: true,
       unique: true,
     },
     name: {
       type: String,
-      require: true,
+      required: true,
       min: 3,
     },
     userName: {
       type: String,
       min: 3,
       unique: true,
-      require: true,
+      required: true,
     },
     profilePicture: {
       type: String,
@@ -33,7 +33,7 @@ const profileSchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      defalut: undefined,
+      default: undefined,
     },
     website: {
       type: String,
@@ -43,8 +43,34 @@ const profileSchema = new mongoose.Schema(
       enum: ["public", "private"],
       default: "public",
     },
+    followers: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+      },
+    ],
+    followersCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
+    blockedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Profile = mongoose.model("Profile", profileSchema);
