@@ -7,7 +7,7 @@ export const createProfileSchema = z.object({
   phoneNo: z.string().length(10).optional(),
   location: z.string().optional(),
   website: z.string().url().optional(),
-  profilePicture: z.string().optional(),
+  avatar: z.string().optional(),
 });
 
 export const updateProfileSchema = z.object({
@@ -17,6 +17,6 @@ export const updateProfileSchema = z.object({
   phoneNo: z.string().length(10).optional(),
   location: z.string().optional(),
   website: z.string().url().optional(),
-  profilePicture: z.string().optional(),
+  avatar: z.string().optional(),
   accoutnType: z.enum(["public", "private"]).optional(),
 });

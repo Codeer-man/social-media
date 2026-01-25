@@ -3,6 +3,27 @@ import { createProfileSchema, updateProfileSchema } from "./profile.schema";
 import { User } from "../../model/user.model";
 import { Profile } from "../../model/profile.model";
 
+export async function getDataHandler(req: Request, res: Response) {
+  const authUser = (req as any).user;
+
+  if (!authUser) {
+    return res.status(404).json({ message: "auth user is requried" });
+  }
+  try {
+    const user = await Profile.findOne({ userId: authUser.id }).select(
+      "-blockedUsers -accountType",
+    );
+
+    return res.status(201).json({
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
 export async function createProfileHandler(req: Request, res: Response) {
   const authReq = req as any;
 
@@ -37,7 +58,7 @@ export async function createProfileHandler(req: Request, res: Response) {
       });
     }
 
-    const { name, userName, bio, location, phoneNo, website, profilePicture } =
+    const { name, userName, bio, location, phoneNo, website, avatar } =
       result.data;
 
     const profile = await Profile.create({
@@ -47,8 +68,8 @@ export async function createProfileHandler(req: Request, res: Response) {
       bio,
       location,
       phoneNo,
-      profilePicture: profilePicture,
-      accoutnType: "public",
+      avatar,
+      accountType: "public",
       website,
     });
 

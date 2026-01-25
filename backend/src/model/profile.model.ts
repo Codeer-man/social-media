@@ -18,7 +18,7 @@ const profileSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
-    profilePicture: {
+    avatar: {
       type: String,
       default: undefined,
     },
@@ -38,7 +38,7 @@ const profileSchema = new mongoose.Schema(
     website: {
       type: String,
     },
-    accoutnType: {
+    accountType: {
       type: String,
       enum: ["public", "private"],
       default: "public",
