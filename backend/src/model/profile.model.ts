@@ -46,13 +46,13 @@ const profileSchema = new mongoose.Schema(
     followers: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
+        ref: "Profile",
       },
     ],
     following: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: "User",
+        ref: "Profile",
       },
     ],
     followersCount: {
@@ -66,7 +66,7 @@ const profileSchema = new mongoose.Schema(
     blockedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Profile",
       },
     ],
   },

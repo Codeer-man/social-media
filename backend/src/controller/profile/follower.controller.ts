@@ -37,10 +37,10 @@ export async function addFollowerHandler(req: Request, res: Response) {
       });
     }
 
-    user.following.push(otherUser.userId!);
+    user.following.push(otherUser._id!);
     user.followingCount += 1;
 
-    otherUser.followers.push(user.userId!);
+    otherUser.followers.push(user._id!);
     otherUser.followersCount += 1;
 
     await Promise.all([user.save(), otherUser.save()]);
@@ -82,7 +82,7 @@ export async function removeFollowerHanlder(req: Request, res: Response) {
 
     //  If user is NOT following otherUser
     const isFollowing = user.following.some(
-      (id) => id.toString() === otherUser.userId.toString(),
+      (id) => id.toString() === otherUser._id.toString(),
     );
 
     if (!isFollowing) {
@@ -93,12 +93,12 @@ export async function removeFollowerHanlder(req: Request, res: Response) {
 
     //  Remove from following
     user.following = user.following.filter(
-      (id) => id.toString() !== otherUser.userId.toString(),
+      (id) => id.toString() !== otherUser._id.toString(),
     );
 
     //  Remove from followers
     otherUser.followers = otherUser.followers.filter(
-      (id) => id.toString() !== user.userId.toString(),
+      (id) => id.toString() !== user._id.toString(),
     );
 
     // Safe count update
@@ -130,11 +130,11 @@ export async function fetchUserHandler(req: Request, res: Response) {
 
   const { type } = req.params;
 
-  // if (type !== "following" || type !== "followers" || type !== "block") {
-  //   return res.status(404).json({
-  //     message: "type is requried",
-  //   });
-  // }
+  if (type === "") {
+    return res.status(409).json({
+      messwage: "Type is required",
+    });
+  }
 
   try {
     const user = await Profile.findOne({ userId: authUser.id })
@@ -205,30 +205,30 @@ export async function blockUserHandler(req: Request, res: Response) {
       });
     }
 
-    if (user.blockedUsers.includes(otherUser.userId)) {
+    if (user.blockedUsers.includes(otherUser._id)) {
       return res
         .status(400)
         .json({ message: "User already blocked this user" });
     }
 
-    user.blockedUsers.push(otherUser.userId);
+    user.blockedUsers.push(otherUser._id);
 
     //  Remove from user
     user.following = user.following.filter(
-      (id) => id.toString() !== otherUser.userId.toString(),
+      (id) => id.toString() !== otherUser._id.toString(),
     );
 
     user.followers = user.followers.filter(
-      (id) => id.toString() !== otherUser.userId.toString(),
+      (id) => id.toString() !== otherUser._id.toString(),
     );
 
     //  Remove from otheruser
     otherUser.followers = otherUser.followers.filter(
-      (id) => id.toString() !== user.userId.toString(),
+      (id) => id.toString() !== user._id.toString(),
     );
 
     otherUser.following = otherUser.following.filter(
-      (id) => id.toString() !== user.userId.toString(),
+      (id) => id.toString() !== user._id.toString(),
     );
 
     // Safe count update
@@ -282,14 +282,14 @@ export async function unBlockUserHandler(req: Request, res: Response) {
       });
     }
 
-    if (!user.blockedUsers.includes(otherUser.userId)) {
+    if (!user.blockedUsers.includes(otherUser._id)) {
       return res.status(401).json({
         message: "You cannot unblock the not blocked user",
       });
     }
 
     user.blockedUsers = user.blockedUsers.filter(
-      (id) => id.toString() !== otherUser.userId.toString(),
+      (id) => id.toString() !== otherUser._id.toString(),
     );
 
     await user.save();
