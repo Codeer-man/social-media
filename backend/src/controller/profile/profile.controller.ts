@@ -58,7 +58,7 @@ export async function createProfileHandler(req: Request, res: Response) {
       });
     }
 
-    const { name, userName, bio, location, phoneNo, website, avatar } =
+    const { name, userName, bio, location, phoneNo, website, avatar, key } =
       result.data;
 
     const profile = await Profile.create({
@@ -69,6 +69,7 @@ export async function createProfileHandler(req: Request, res: Response) {
       location,
       phoneNo,
       avatar,
+      avatarKey: key,
       accountType: "public",
       website,
     });

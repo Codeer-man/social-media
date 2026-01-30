@@ -13,18 +13,17 @@ export async function uploadHanlder(req: Request, res: Response) {
 
     const key = `${folder}/${Date.now()}-${fileName}`;
 
-    const result = await putObjectSignedUrl(key, fileType, folder, fileName);
+    const result = await putObjectSignedUrl(key, fileType);
 
     return res.status(201).json({
       message: "Image uploaded",
       result: {
         uploadUrl: result.uploadUrl,
         fileUri: result.fileUrl,
+        key: key,
       },
     });
   } catch (error) {
-    console.log(error);
-
     return res.status(500).json({
       message: "Internal server error",
       error: error,
