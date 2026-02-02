@@ -111,7 +111,6 @@ export async function removeFollowerHanlder(req: Request, res: Response) {
       message: "User successfully unfollowed",
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -164,8 +163,6 @@ export async function fetchUserHandler(req: Request, res: Response) {
 
     return res.status;
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
     });

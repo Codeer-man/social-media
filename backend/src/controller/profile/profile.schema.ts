@@ -8,6 +8,7 @@ export const createProfileSchema = z.object({
   location: z.string().optional(),
   website: z.string().url().optional(),
   avatar: z.string().optional(),
+  key: z.string().optional(),
 });
 
 export const updateProfileSchema = z.object({

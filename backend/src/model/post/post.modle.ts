@@ -42,6 +42,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    mediaKey: {
+      type: String,
+      required: true,
+    },
     caption: {
       type: String,
     },
@@ -49,15 +53,6 @@ const postSchema = new mongoose.Schema(
       type: String,
       enum: ["public", "private", "followers"],
       default: "public",
-    },
-    likeCount: {
-      type: Number,
-      default: 0,
-    },
-
-    commentCount: {
-      type: Number,
-      default: 0,
     },
     viewCount: {
       type: Number,

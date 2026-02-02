@@ -22,6 +22,9 @@ const profileSchema = new mongoose.Schema(
       type: String,
       default: undefined,
     },
+    avatarKey: {
+      type: String,
+    },
     bio: {
       type: String,
       max: 150,

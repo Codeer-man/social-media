@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Profile } from "../../../model/profile.model";
 import { Post } from "../../../model/post/post.modle";
 import { updatePostSchema } from "./post.schema";
+import { deleteObjectSugnedUrl } from "../../../lib/presignedUrl";
+import { handleAddComment, toggleLike } from "../../../services/post.service";
 
 export async function createPostHanlder(req: Request, res: Response) {
   const authUser = (req as any).user;
@@ -12,7 +14,7 @@ export async function createPostHanlder(req: Request, res: Response) {
     });
   }
   try {
-    const { mediaType, mediaUrl, caption, visibility } = req.body;
+    const { mediaType, mediaUrl, caption, visibility, key } = req.body;
     if (!mediaType || !mediaUrl) {
       return res.status(409).json({
         message: "mediaType or mediaUrl is missig",
@@ -29,6 +31,7 @@ export async function createPostHanlder(req: Request, res: Response) {
       author: user.id,
       mediaType: mediaType,
       mediaUrl: mediaUrl,
+      mediaKey: key,
       caption,
       visibility,
     });
@@ -76,6 +79,7 @@ export async function deletePostHandler(req: Request, res: Response) {
       });
     }
 
+    await deleteObjectSugnedUrl(post.mediaKey);
     await post.deleteOne(post._id);
 
     return res.status(201).json({
@@ -150,9 +154,9 @@ export async function viewPostHandler(req: Request, res: Response) {
     });
   }
 
-  const postId = req.params.id;
+  const postId = req.params.postId;
   if (!postId) {
-    return res.status(401).json({
+    return res.status(400).json({
       message: "You are not authenticated",
     });
   }
@@ -163,9 +167,151 @@ export async function viewPostHandler(req: Request, res: Response) {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
+
+    const authorId = post.author.toString();
+    const profile = await Profile.findOne({ userId: authUser.id });
+    const profileId = profile?._id?.toString();
+
+    //  Private post
+    if (post.visibility === "private") {
+      if (authorId !== profileId) {
+        return res.status(400).json({
+          message: "sorry this post is privated by the author",
+        });
+      }
+    }
+
+    // Followers-only post
+    if (post.visibility === "followers") {
+      if (authorId !== profileId) {
+        const profile = await Profile.findById(post.author);
+        const isFollower = profile?.followers.some(
+          (id) => id.toString() === authUser.id,
+        );
+        if (!isFollower) {
+          return res.status(201).json({
+            message: "Sorry this post is only for followers",
+          });
+        }
+      }
+    }
+
+    // increase view if access granted
+    await Post.updateOne({ _id: postId }, { $inc: { viewCount: 1 } });
+
+    return res.status(201).json({
+      data: post,
+    });
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
     });
   }
 }
+
+export async function likePostHandler(req: Request, res: Response) {
+  const authUser = (req as any).user;
+  if (!authUser) {
+    return res.status(401).json({
+      message: "You are not authenticated",
+    });
+  }
+
+  const postId = req.params.postId;
+  if (!postId) {
+    return res.status(400).json({
+      message: "You are not authenticated",
+    });
+  }
+  try {
+    const result = await toggleLike({
+      model: Post,
+      resourceId: postId,
+      userId: authUser.id,
+    });
+
+    return res.status(200).json({
+      message: result.liked ? "Post unlikes" : "Post liked",
+      data: result.updatedPost,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function commentPostHandler(req: Request, res: Response) {
+  const authUser = (req as any).user;
+  if (!authUser) {
+    return res.status(401).json({
+      message: "You are not authenticated",
+    });
+  }
+
+  const postId = req.params.postId;
+  if (!postId) {
+    return res.status(400).json({
+      message: "You are not authenticated",
+    });
+  }
+  const { commentText } = req.body;
+  if (!commentText) {
+    return res.status(400).json({
+      message: "comment is required",
+    });
+  }
+  try {
+    const result = await handleAddComment({
+      model: Post,
+      comment: commentText,
+      userId: authUser.id,
+      postId: postId,
+    });
+
+    return res
+      .status(200)
+      .json({ message: "new message has been added", result: result });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+}
+
+// export async function commentDeleteHandler(req: Request, res: Response) {
+//   const authUser = (req as any).user;
+//   if (!authUser) {
+//     return res.status(401).json({
+//       message: "You are not authenticated",
+//     });
+//   }
+
+//   const { postId, commentId } = req.params;
+//   if (!postId || !commentId) {
+//     return res.status(404).json({
+//       message: "post or comment not found",
+//     });
+//   }
+
+//   try {
+//     const result = await handleDeleteComment({
+//       model: Post,
+//       userId: authUser.id,
+//       postId: postId,
+//       commentId: commentId,
+//     });
+
+//     return res.status(200).json({ message: "Comment deleted ", data: result });
+//   } catch (error) {
+//     console.error(error);
+
+//     return res.status(500).json({
+//       message: "Internal server error",
+//       error,
+//     });
+//   }
+// }
