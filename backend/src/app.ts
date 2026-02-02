@@ -6,6 +6,7 @@ import authRouter from "./routes/auth/auth.router";
 import uploadRouter from "./routes/presignedUrl/fileUload.route";
 import profileRoute from "./routes/profile/profile.route";
 import postRouter from "./routes/post/post.route";
+import { errorHandler } from "./middleware/errorHandler";
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/profile", profileRoute);
 app.use("/api/post", postRouter);
+
+//global error handler
+app.use(errorHandler);
 
 //health not req
 app.get("/health", (_req, res) => {

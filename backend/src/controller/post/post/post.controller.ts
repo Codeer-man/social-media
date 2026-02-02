@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Profile } from "../../../model/profile.model";
 import { Post } from "../../../model/post/post.modle";
 import { updatePostSchema } from "./post.schema";
@@ -241,7 +241,11 @@ export async function likePostHandler(req: Request, res: Response) {
   }
 }
 
-export async function commentPostHandler(req: Request, res: Response) {
+export async function commentPostHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   const authUser = (req as any).user;
   if (!authUser) {
     return res.status(401).json({
@@ -273,12 +277,7 @@ export async function commentPostHandler(req: Request, res: Response) {
       .status(200)
       .json({ message: "new message has been added", result: result });
   } catch (error) {
-    console.log(error);
-
-    return res.status(500).json({
-      message: "Internal server error",
-      error,
-    });
+    next(error);
   }
 }
 
