@@ -1,9 +1,15 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, request, Request, response, Response } from "express";
 import { Profile } from "../../../model/profile.model";
 import { Post } from "../../../model/post/post.modle";
 import { updatePostSchema } from "./post.schema";
 import { deleteObjectSugnedUrl } from "../../../lib/presignedUrl";
-import { handleAddComment, toggleLike } from "../../../services/post.service";
+import {
+  handleAddComment,
+  handleCommentLikeToggle,
+  handleCommentReply,
+  handleDeleteComment,
+  toggleLike,
+} from "../../../services/post.service";
 
 export async function createPostHanlder(req: Request, res: Response) {
   const authUser = (req as any).user;
@@ -227,7 +233,7 @@ export async function likePostHandler(req: Request, res: Response) {
     const result = await toggleLike({
       model: Post,
       resourceId: postId,
-      userId: authUser.id,
+      ProfileId: authUser.profile,
     });
 
     return res.status(200).json({
@@ -269,7 +275,7 @@ export async function commentPostHandler(
     const result = await handleAddComment({
       model: Post,
       comment: commentText,
-      userId: authUser.id,
+      ProfileId: authUser.profile,
       postId: postId,
     });
 
@@ -281,36 +287,111 @@ export async function commentPostHandler(
   }
 }
 
-// export async function commentDeleteHandler(req: Request, res: Response) {
-//   const authUser = (req as any).user;
-//   if (!authUser) {
-//     return res.status(401).json({
-//       message: "You are not authenticated",
-//     });
-//   }
+export async function commentDeleteHandler(req: Request, res: Response) {
+  const authUser = (req as any).user;
+  if (!authUser) {
+    return res.status(401).json({
+      message: "You are not authenticated",
+    });
+  }
 
-//   const { postId, commentId } = req.params;
-//   if (!postId || !commentId) {
-//     return res.status(404).json({
-//       message: "post or comment not found",
-//     });
-//   }
+  const { postId, commentId } = req.params;
+  if (!postId || !commentId) {
+    return res.status(404).json({
+      message: "post or comment not found",
+    });
+  }
 
-//   try {
-//     const result = await handleDeleteComment({
-//       model: Post,
-//       userId: authUser.id,
-//       postId: postId,
-//       commentId: commentId,
-//     });
+  try {
+    const result = await handleDeleteComment({
+      model: Post,
+      ProfileId: authUser.profile,
+      postId: postId,
+      commentId: commentId,
+    });
 
-//     return res.status(200).json({ message: "Comment deleted ", data: result });
-//   } catch (error) {
-//     console.error(error);
+    return res.status(200).json({ message: "Comment deleted ", data: result });
+  } catch (error) {
+    console.error(error);
 
-//     return res.status(500).json({
-//       message: "Internal server error",
-//       error,
-//     });
-//   }
-// }
+    return res.status(500).json({
+      message: "Internal server error",
+      error,
+    });
+  }
+}
+
+export async function commentLikeHanlder(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const authUser = (req as any).user;
+
+  if (!authUser) {
+    return res.status(404).json({
+      message: "Auth is reqiured",
+    });
+  }
+
+  const { postId, commentId } = req.params;
+  if (!postId || !commentId) {
+    return res.status(404).json({ message: " post or comment id is missing " });
+  }
+
+  try {
+    const result = await handleCommentLikeToggle({
+      model: Post,
+      profileId: authUser.profile,
+      postId: postId,
+      commentId: commentId,
+    });
+
+    return res.status(201).json({ result: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function commentReplyHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const authUser = (req as any).user;
+  if (!authUser) {
+    return res.status(404).json({
+      message: "You are not authenticated",
+    });
+  }
+
+  const { commentId, postId } = req.params;
+  if (!commentId || !postId) {
+    return res.status(404).json({
+      message: "commentId or postId is missing",
+    });
+  }
+
+  const { reply } = req.body;
+  if (!reply) {
+    return res.status(404).json({
+      message: "You cannot give blank space",
+    });
+  }
+
+  try {
+    const result = await handleCommentReply({
+      model: Post,
+      commentId: commentId,
+      postId: postId,
+      profileId: authUser.profileId,
+      comment: reply,
+    });
+
+    return res.status(201).json({
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "../lib/token";
 import { User } from "../model/user.model";
+import { Profile } from "../model/profile.model";
 
 export default async function authRequired(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const authHeader = req.headers.authorization as string;
 
@@ -33,11 +34,16 @@ export default async function authRequired(
         message: "Token version invalid",
       });
     }
+    const profile = await Profile.findOne({ userId: user._id });
 
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
     const authReq = req as any;
 
     authReq.user = {
       id: user.id,
+      profile: profile._id.toString(),
       email: user.email,
       tokenVersion: user.tokenVersion,
       isEmailVerified: user.isEmailVerified,

@@ -1,25 +1,26 @@
 import mongoose from "mongoose";
+import { ApiError } from "../utils/errorHandling";
 
 export async function toggleLike({
   model,
   resourceId,
-  userId,
+  ProfileId,
 }: {
   model: mongoose.Model<any>;
   resourceId: string;
-  userId: string;
+  ProfileId: string;
 }) {
   const docs = await model.findById(resourceId).select("likes");
 
   if (!docs) {
-    throw new Error("Not found");
+    throw new ApiError(404, "Not found");
   }
 
-  const liked = docs.likes.includes(userId);
+  const liked = docs.likes.includes(ProfileId);
 
   const update = liked
-    ? { $pull: { likes: userId } }
-    : { $push: { likes: userId } };
+    ? { $pull: { likes: ProfileId } }
+    : { $push: { likes: ProfileId } };
 
   const updatedPost = await model.findByIdAndUpdate(resourceId, update, {
     new: true,
@@ -32,12 +33,12 @@ export async function toggleLike({
 export async function handleAddComment({
   model,
   comment,
-  userId,
+  ProfileId,
   postId,
 }: {
   model: mongoose.Model<any>;
   comment: string;
-  userId: string;
+  ProfileId: string;
   postId: string;
 }) {
   const docs = await model.findByIdAndUpdate(
@@ -45,7 +46,7 @@ export async function handleAddComment({
     {
       $push: {
         comments: {
-          user: userId,
+          user: ProfileId,
           text: comment,
           likes: [],
         },
@@ -61,45 +62,126 @@ export async function handleAddComment({
   return docs;
 }
 
+export async function handleDeleteComment({
+  model,
+  ProfileId,
+  postId,
+  commentId,
+}: {
+  model: mongoose.Model<any>;
+  ProfileId: string;
+  postId: string;
+  commentId: string;
+}) {
+  const docs = await model.findById(postId);
 
+  if (!docs) {
+    throw new ApiError(403, `${model} not found`);
+  }
 
-// export async function handleDeleteComment({
-//   model,
-//   userId,
-//   postId,
-//   commentId,
-// }: {
-//   model: mongoose.Model<any>;
-//   userId: string;
-//   postId: string;
-//   commentId: string;
-// }) {
-//   const docs = await model.findById(postId);
+  const commentIndex = docs.comments.findIndex(
+    (id: any) => id._id.toString() === commentId,
+  );
 
-//   if (!docs) {
-//     return res.json({ message: `${model} not found` });
-//   }
+  if (commentIndex === -1) {
+    throw new ApiError(404, "comment not found");
+  }
 
-//   const commentIndex = docs.comments.findIndex(
-//     (id: any) => id._id.toString() === commentId,
-//   );
+  const user = docs.comments[commentIndex].user.toString();
 
-//   if (commentIndex === -1) {
-//     return res.json({ message: "comment not found" });
-//   }
+  if (user !== ProfileId) {
+    throw new ApiError(403, "you are not the owner of this comment");
+  }
 
-//   const user = docs.comments[commentIndex].user.toString();
+  docs.comments.splice(commentIndex, 1);
+  await docs.save();
 
-//   if (user !== userId) {
-//     return res.json({ message: "you are not the owner of this comment" });
-//   }
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Comment deleted successfully",
+  };
+}
 
-//   docs.comments.splice(commentIndex, 1);
-//   await docs.save();
+export async function handleCommentLikeToggle({
+  model,
+  profileId,
+  postId,
+  commentId,
+}: {
+  model: mongoose.Model<any>;
+  profileId: string;
+  postId: string;
+  commentId: string;
+}) {
+  const docs = await model.findById(postId);
 
-//   return {
-//     success: true,
-//     statusCode: 200,
-//     message: "Comment deleted successfully",
-//   };
-// }
+  if (!docs) {
+    throw new ApiError(404, `${model} not found`);
+  }
+
+  const commentIndex = docs.comments.findIndex(
+    (id: any) => id._id.toString() === commentId,
+  );
+
+  if (commentIndex === -1) {
+    throw new ApiError(404, "Comment not found");
+  }
+
+  const comment = docs.comments[commentIndex].likes;
+
+  const liked = comment.includes(profileId);
+
+  const update = liked
+    ? { $pull: { "comments.$.likes": profileId } }
+    : { $push: { "comments.$.likes": profileId } };
+
+  const updatePost = await model.findOneAndUpdate(
+    { _id: postId, "comments._id": commentId },
+    update,
+    {
+      new: true,
+    },
+  );
+
+  return updatePost;
+}
+
+export async function handleCommentReply({
+  model,
+  profileId,
+  commentId,
+  postId,
+  comment,
+}: {
+  model: mongoose.Model<any>;
+  profileId: string;
+  commentId: string;
+  postId: string;
+  comment: string;
+}) {
+  const docs = await model.findOneAndUpdate(
+    { _id: postId, "comments._id": commentId },
+    {
+      $push: {
+        "comments.$.replies": {
+          user: profileId,
+          text: comment,
+        },
+      },
+    },
+  );
+
+  if (!docs) {
+    throw new ApiError(404, "Post not found");
+  }
+
+  // const findComment = docs.comments.find(
+  //   (id: any) => id._id.toString() === commentId,
+  // );
+
+  // if (!findComment) {
+  //   throw new ApiError(404, "comment not found");
+  // }
+  return docs;
+}
