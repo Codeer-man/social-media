@@ -176,12 +176,5 @@ export async function handleCommentReply({
     throw new ApiError(404, "Post not found");
   }
 
-  // const findComment = docs.comments.find(
-  //   (id: any) => id._id.toString() === commentId,
-  // );
-
-  // if (!findComment) {
-  //   throw new ApiError(404, "comment not found");
-  // }
   return docs;
 }
