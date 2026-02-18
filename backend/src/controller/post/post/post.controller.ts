@@ -10,6 +10,10 @@ import {
   handleDeleteComment,
   toggleLike,
 } from "../../../services/post.service";
+import {
+  createNotification,
+  removeNotification,
+} from "../../../services/notification.service";
 
 export async function createPostHanlder(req: Request, res: Response) {
   const authUser = (req as any).user;
@@ -236,11 +240,31 @@ export async function likePostHandler(req: Request, res: Response) {
       ProfileId: authUser.profile,
     });
 
+    // notification
+    if (!result.liked) {
+      await createNotification({
+        receiptId: result.author,
+        senderId: authUser.profile,
+        type: "POST_LIKE",
+        entityId: result.updatedPost._id,
+        entityModel: "Post",
+      });
+    } else {
+      await removeNotification({
+        receiptId: result.author,
+        senderId: authUser.profile,
+        type: "POST_LIKE",
+        entityId: result.updatedPost._id,
+      });
+    }
+
     return res.status(200).json({
       message: result.liked ? "Post unlikes" : "Post liked",
       data: result.updatedPost,
     });
   } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -279,6 +303,18 @@ export async function commentPostHandler(
       postId: postId,
     });
 
+    console.log(result);
+
+    //notification
+    await createNotification({
+      receiptId: result.author,
+      senderId: authUser.profile,
+      type: "POST_COMMENT",
+      entityId: result._id,
+      entityModel: "Post",
+      extraText: commentText,
+    });
+
     return res
       .status(200)
       .json({ message: "new message has been added", result: result });
@@ -308,6 +344,16 @@ export async function commentDeleteHandler(req: Request, res: Response) {
       ProfileId: authUser.profile,
       postId: postId,
       commentId: commentId,
+    });
+
+    console.log(result, "delete");
+
+    //notification
+    await removeNotification({
+      receiptId: result.docs.author,
+      senderId: authUser.profile,
+      type: "POST_COMMENT",
+      entityId: result.docs._id,
     });
 
     return res.status(200).json({ message: "Comment deleted ", data: result });
@@ -347,7 +393,29 @@ export async function commentLikeHanlder(
       commentId: commentId,
     });
 
-    return res.status(201).json({ result: result });
+    //notification
+    if (!result.liked) {
+      await createNotification({
+        receiptId: result.updatePost.author,
+        senderId: authUser.profile,
+        entityId: result.updatePost._id,
+        entityModel: "Post",
+        type: "COMMENT_LIKE",
+        extraText: result.updatePost.comments[0].text,
+      });
+    } else {
+      await removeNotification({
+        receiptId: result.updatePost.author,
+        senderId: authUser.profile,
+        entityId: result.updatePost._id,
+        type: "COMMENT_LIKE",
+      });
+    }
+
+    return res.status(201).json({
+      result: result,
+      message: result.liked ? "You disliked" : "You liked",
+    });
   } catch (error) {
     next(error);
   }
@@ -386,6 +454,17 @@ export async function commentReplyHandler(
       postId: postId,
       profileId: authUser.profileId,
       comment: reply,
+    });
+    console.log(result, "result");
+
+    //notification
+    await createNotification({
+      receiptId: result.author,
+      senderId: authUser.profile,
+      entityModel: "Post",
+      entityId: result._id,
+      type: "COMMENT_REPLY",
+      extraText: reply,
     });
 
     return res.status(201).json({

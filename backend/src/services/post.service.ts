@@ -24,10 +24,10 @@ export async function toggleLike({
 
   const updatedPost = await model.findByIdAndUpdate(resourceId, update, {
     new: true,
-    select: "likes",
+    select: "likes author",
   });
 
-  return { updatedPost, liked };
+  return { updatedPost, liked, author: updatedPost.author };
 }
 
 export async function handleAddComment({
@@ -52,7 +52,7 @@ export async function handleAddComment({
         },
       },
     },
-    { new: true, select: "comments" },
+    { new: true, select: "comments author" },
   );
 
   if (!docs) {
@@ -100,6 +100,7 @@ export async function handleDeleteComment({
     success: true,
     statusCode: 200,
     message: "Comment deleted successfully",
+    docs,
   };
 }
 
@@ -144,7 +145,7 @@ export async function handleCommentLikeToggle({
     },
   );
 
-  return updatePost;
+  return { updatePost, liked };
 }
 
 export async function handleCommentReply({

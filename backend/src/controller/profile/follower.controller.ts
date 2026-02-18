@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { Profile } from "../../model/profile.model";
+import {
+  createNotification,
+  removeNotification,
+} from "../../services/notification.service";
 
 export async function addFollowerHandler(req: Request, res: Response) {
   const authReq = req as any;
@@ -45,14 +49,33 @@ export async function addFollowerHandler(req: Request, res: Response) {
 
     await Promise.all([user.save(), otherUser.save()]);
 
+    //notification
+
+    const noti = await createNotification({
+      receiptId: otherUser._id.toString(),
+      senderId: authUser.profile,
+      entityModel: "Profile",
+      entityId: authUser.profile,
+      type: "FOLLOWED",
+    });
+
+    if (!noti) {
+      return res.json({
+        message: "Noti error",
+      });
+    }
+
     return res.status(201).json({
       message: "user successfully followed",
       data: {
         userFollowingCount: user.followingCount,
         targetFollowersCount: otherUser.followersCount,
+        notification: noti,
       },
     });
   } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
       message: "Internal servererror",
     });
@@ -106,6 +129,14 @@ export async function removeFollowerHanlder(req: Request, res: Response) {
     otherUser.followersCount = Math.max(0, otherUser.followersCount - 1);
 
     await Promise.all([user.save(), otherUser.save()]);
+
+    //notification
+    await removeNotification({
+      receiptId: otherUser._id.toString(),
+      senderId: authUser.profile,
+      type: "FOLLOWED",
+      entityId: authUser.profile,
+    });
 
     return res.status(200).json({
       message: "User successfully unfollowed",

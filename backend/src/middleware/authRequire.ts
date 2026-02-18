@@ -36,14 +36,11 @@ export default async function authRequired(
     }
     const profile = await Profile.findOne({ userId: user._id });
 
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
     const authReq = req as any;
 
     authReq.user = {
       id: user.id,
-      profile: profile._id.toString(),
+      profile: profile?._id.toString() || undefined,
       email: user.email,
       tokenVersion: user.tokenVersion,
       isEmailVerified: user.isEmailVerified,

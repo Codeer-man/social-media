@@ -59,7 +59,7 @@ export async function registerHanlder(req: Request, res: Response) {
       `
       <p>Pleaes verify your email </p>
       <p><a href="${verifyUrl}"> ${verifyUrl} <a/> <p/>
-      `
+      `,
     );
 
     return res.status(200).json({
@@ -122,7 +122,7 @@ export async function loginHandler(req: Request, res: Response) {
         `
       <p>Pleaes verify your email </p>
       <p><a href="${verifyUrl}"> ${verifyUrl} <a/> <p/>
-      `
+      `,
       );
       return res.status(403).json({
         message: "Your email is not verified",
@@ -132,7 +132,7 @@ export async function loginHandler(req: Request, res: Response) {
     const accessToken = createAccessToken(
       user.id,
       user.role,
-      user.tokenVersion
+      user.tokenVersion,
     );
 
     const refreshToken = createRefreshToken(user.id, user.tokenVersion);
@@ -157,8 +157,6 @@ export async function loginHandler(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.log(error);
-
     return res.status(500).json({
       message: "Internal server error",
       error: error,
@@ -233,7 +231,7 @@ export async function refreshTokenHandler(req: Request, res: Response) {
     const newAccessToken = createAccessToken(
       user.id,
       user.role,
-      user.tokenVersion
+      user.tokenVersion,
     );
 
     const newRefreshToken = createRefreshToken(user.id, user.tokenVersion);
@@ -311,7 +309,7 @@ export async function forgetPasswordHandler(req: Request, res: Response) {
     await sendEmail(
       user.email!,
       "Password reset Email",
-      resetPwdHTML(resetURL)
+      resetPwdHTML(resetURL),
     );
 
     return res.json({
