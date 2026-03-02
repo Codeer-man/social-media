@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  checkAuth,
   forgetPasswordHandler,
   loginHandler,
   logoutHandler,
@@ -21,6 +22,9 @@ router.post("/login", loginHandler);
 router.get("/verify-email", verifyEmailHandler);
 router.get("/refresh-token", authRequired, refreshTokenHandler);
 router.post("/logout", authRequired, logoutHandler);
+
+//check auth
+router.get("/check-auth", authRequired, checkAuth);
 
 //forget pwd
 router.post("/forget-password", authRequired, forgetPasswordHandler);

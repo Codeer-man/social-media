@@ -12,7 +12,7 @@ import {
 import crypto from "crypto";
 import { sendEmail } from "../../lib/email";
 import { resetPwdHTML } from "../../utils/resetPwdHtml";
-import getUrl from "../../lib/getUrl";
+import { getUrl, frontendUrl } from "../../lib/getUrl";
 
 export async function registerHanlder(req: Request, res: Response) {
   try {
@@ -71,8 +71,6 @@ export async function registerHanlder(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
       error: error,
@@ -139,6 +137,13 @@ export async function loginHandler(req: Request, res: Response) {
 
     const isProd = process.env.NODE_ENV === "production";
 
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProd,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "lax",
@@ -193,9 +198,12 @@ export async function verifyEmailHandler(req: Request, res: Response) {
     user.isEmailVerified = true;
     await user.save();
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Email is Verified.",
     });
+
+    //redirect on develoment
+    return res.redirect(`${frontendUrl()}/create/profile`);
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
@@ -265,6 +273,7 @@ export async function refreshTokenHandler(req: Request, res: Response) {
 
 export const logoutHandler = (_req: Request, res: Response) => {
   res.clearCookie("refreshToken", { path: "/" });
+  res.clearCookie("accessToken", { path: "/" });
 
   return res.status(201).json({
     message: "Log out",
@@ -364,11 +373,21 @@ export async function resetPasswordHandler(req: Request, res: Response) {
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
       error,
+    });
+  }
+}
+
+export async function checkAuth(req: Request, res: Response) {
+  try {
+    const user = (req as any).user;
+
+    res.status(200).json({ message: "Authenticated User", user });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
 }

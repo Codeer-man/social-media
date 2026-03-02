@@ -8,15 +8,11 @@ export default async function authRequired(
   res: Response,
   next: NextFunction,
 ) {
-  const authHeader = req.headers.authorization as string;
+  const token = req.cookies.accessToken as string;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      message: "Auth header is required",
-    });
+  if (!token) {
+    return res.status(401).json({ message: "token is requried" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const payload = verifyAccessToken(token);
