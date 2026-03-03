@@ -14,7 +14,6 @@ export async function getNotificationController(
 
   try {
     const notificatoin = await Notification.find({ receipt: authUser.profile });
-    console.log(authUser.profile);
 
     if (!notificatoin) {
       return res.status(201).json({

@@ -50,8 +50,6 @@ export async function createPostHanlder(req: Request, res: Response) {
       .status(200)
       .json({ message: "Your new post has been created", data: newPost });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -263,8 +261,6 @@ export async function likePostHandler(req: Request, res: Response) {
       data: result.updatedPost,
     });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -302,8 +298,6 @@ export async function commentPostHandler(
       ProfileId: authUser.profile,
       postId: postId,
     });
-
-    console.log(result);
 
     //notification
     await createNotification({
@@ -346,8 +340,6 @@ export async function commentDeleteHandler(req: Request, res: Response) {
       commentId: commentId,
     });
 
-    console.log(result, "delete");
-
     //notification
     await removeNotification({
       receiptId: result.docs.author,
@@ -358,8 +350,6 @@ export async function commentDeleteHandler(req: Request, res: Response) {
 
     return res.status(200).json({ message: "Comment deleted ", data: result });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
       error,
@@ -455,7 +445,6 @@ export async function commentReplyHandler(
       profileId: authUser.profileId,
       comment: reply,
     });
-    console.log(result, "result");
 
     //notification
     await createNotification({

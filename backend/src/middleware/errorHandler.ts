@@ -11,7 +11,6 @@ export function errorHandler(
     return res.status(error.statusCode).json({ message: error.message });
   }
 
-  console.error(error);
   const isProd = process.env.NODE_ENV === "production";
   return res
     .status(500)

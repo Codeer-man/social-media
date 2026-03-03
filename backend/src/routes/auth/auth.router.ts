@@ -27,7 +27,7 @@ router.post("/logout", authRequired, logoutHandler);
 router.get("/check-auth", authRequired, checkAuth);
 
 //forget pwd
-router.post("/forget-password", authRequired, forgetPasswordHandler);
+router.post("/forget-password", forgetPasswordHandler);
 router.post("/reset-password", resetPasswordHandler);
 
 //google auth

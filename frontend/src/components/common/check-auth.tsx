@@ -7,7 +7,8 @@ interface AuthProps {
   isAuthenticated?: boolean;
   user?: {
     id: string;
-    userName: string;
+    email: string;
+    isEmailVerified: boolean;
     role: "user" | "admin";
   } | null;
   children?: React.ReactNode;
@@ -25,7 +26,8 @@ export default function CheckAuth({
     !isAuthenticated &&
     !(
       location.pathname.includes("/login") ||
-      location.pathname.includes("/register")
+      location.pathname.includes("/register") ||
+      location.pathname.includes("/create")
     )
   ) {
     return <Navigate to={"/auth/login"} />;
@@ -34,7 +36,7 @@ export default function CheckAuth({
   //role based route
   if (
     isAuthenticated &&
-    (location.pathname.includes("/login") ||
+    (location.pathname.includes("login") ||
       location.pathname.includes("register"))
   ) {
     if (user?.role === "admin") {

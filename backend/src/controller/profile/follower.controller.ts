@@ -74,8 +74,6 @@ export async function addFollowerHandler(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: "Internal servererror",
     });

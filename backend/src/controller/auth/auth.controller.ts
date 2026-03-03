@@ -141,7 +141,7 @@ export async function loginHandler(req: Request, res: Response) {
       httpOnly: true,
       sameSite: "lax",
       secure: isProd,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
@@ -313,7 +313,7 @@ export async function forgetPasswordHandler(req: Request, res: Response) {
 
     await user.save();
 
-    const resetURL = `${getUrl()}/api/auth/reset-password?token=${rawToken}`;
+    const resetURL = `${frontendUrl()}/password/reset?token=${rawToken}`;
 
     await sendEmail(
       user.email!,
