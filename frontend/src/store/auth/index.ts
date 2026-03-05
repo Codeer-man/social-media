@@ -11,6 +11,7 @@ const initialState: AuthState = {
   user: null,
   error: null,
   message: null,
+  link: null,
 };
 
 //* register user
@@ -57,7 +58,7 @@ export const loginUser = createAsyncThunk<
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return rejectWithValue(
-        error.response?.data?.message || "something weng wrong",
+        error.response?.data?.message || "Something went wrong",
       );
     }
   }
@@ -95,9 +96,13 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   "/auth/logout",
   async (_NEVER, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${URL}/logout`, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${URL}/logout`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
 
       return response.data;
     } catch (error) {
@@ -108,7 +113,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
       }
     }
 
-    return rejectWithValue("unexpected error occured");
+    return rejectWithValue("Unexpected error Occured");
   },
 );
 
@@ -160,6 +165,28 @@ export const resetPassword = createAsyncThunk<
 
   return rejectWithValue("Unexpected error occured");
 });
+
+//google oauth
+export const googleOAuth = createAsyncThunk<
+  { message: string; link: string },
+  void,
+  { rejectValue: string }
+>("/auth/google", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(`${URL}/google`);
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return rejectWithValue(
+        error.response?.data?.message || "something went wrong",
+      );
+    }
+  }
+
+  return rejectWithValue("something went worng");
+});
+
 //slice
 const authSlice = createSlice({
   name: "auth",
@@ -259,6 +286,21 @@ const authSlice = createSlice({
         state.message = action.payload.message;
       }) //rejected
       .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      //* google oauth
+      //pending
+      .addCase(googleOAuth.pending, (state) => {
+        state.isLoading = true;
+      }) //fulfilled
+      .addCase(googleOAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.link = action.payload.link as string;
+        state.message = action.payload.message as string;
+      }) //rejected
+      .addCase(googleOAuth.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

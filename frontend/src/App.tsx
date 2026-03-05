@@ -79,10 +79,10 @@ export default function App() {
       ],
     },
 
-    {
-      path: "*",
-      element: <ForgotPassword />,
-    },
+    // {
+    //   path: "*",
+    //   element: <ForgotPassword />,
+    // },
   ]);
 
   return (

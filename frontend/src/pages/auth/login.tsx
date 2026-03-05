@@ -8,6 +8,7 @@ import { useState } from "react";
 
 //icons
 import { IoIosEyeOff, IoMdEye } from "react-icons/io";
+import GoogleOAuth from "../../components/oAuth/google";
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -118,22 +119,10 @@ export default function Login() {
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* Google  */}
+        {/* Google  oauth */}
 
-        <button
-          type="button"
-          onClick={() => {
-            /* your google auth handler */
-          }}
-          className="w-full flex items-center justify-center gap-3 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700 cursor-pointer"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          Continue with Google
-        </button>
+        <GoogleOAuth />
+
         <p className=" text-xs text-gray-500 text-center">
           By clicking Agree & Join or Continue, you agree to the LinkedIn User
           Agreement, Privacy Policy, and Cookie Policy.

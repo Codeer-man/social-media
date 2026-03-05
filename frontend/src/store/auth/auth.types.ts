@@ -19,4 +19,5 @@ export interface AuthState {
   isAuthenticated: boolean;
   error: string | null;
   message: string | null;
+  link: string | null;
 }

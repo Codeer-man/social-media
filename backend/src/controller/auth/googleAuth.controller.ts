@@ -5,6 +5,7 @@ import { User } from "../../model/user.model";
 import crypto from "crypto";
 import { hashPassword } from "../../lib/hash";
 import { createAccessToken, createRefreshToken } from "../../lib/token";
+import { frontendUrl } from "../../lib/getUrl";
 
 function getGoogleClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -101,29 +102,28 @@ export async function googleAuthCallbackHanlder(req: Request, res: Response) {
     const accessToken = createAccessToken(
       user.id,
       user.role,
-      user.tokenVersion
+      user.tokenVersion,
     );
 
     const refreshToken = createRefreshToken(user.id, user.tokenVersion);
 
     const isProd = process.env.NODE_ENV === "production";
 
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProd,
+      maxAge: 15 * 60 * 1000,
+    });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "lax",
       secure: isProd,
-      maxAge: 7 * 14 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      message: "Google login successfully",
-      accessToken: accessToken,
-      user: {
-        email: user.email,
-        isEmailVerified: user.isEmailVerified,
-        role: user.role,
-      },
-    });
+    const link = `${frontendUrl()}/`;
+    return res.redirect(link);
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",
