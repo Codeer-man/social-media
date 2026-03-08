@@ -11,6 +11,7 @@ import profileRoute from "./routes/profile/profile.route";
 import postRouter from "./routes/post/post.route";
 import storyRoute from "./routes/post/story.route";
 import notiRoute from "./routes/notification/noti.route";
+import chatRoute from "./routes/chat/chat.route";
 
 import { errorHandler } from "./middleware/errorHandler";
 dotenv.config();
@@ -42,6 +43,7 @@ app.use("/api/profile", profileRoute);
 app.use("/api/post", postRouter);
 app.use("/api/story", storyRoute);
 app.use("/api/noti", notiRoute);
+app.use("/api/chat", chatRoute);
 
 //global error handler
 app.use(errorHandler);
