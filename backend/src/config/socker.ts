@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { frontendUrl } from "../lib/getUrl";
-import { Server as HttpServer } from "http";
+import { get, Server as HttpServer } from "http";
 import { verifyAccessToken } from "../lib/token";
 
 const onlineUser = new Map();
@@ -35,11 +35,59 @@ export async function setUpSocketIo(httpServer: HttpServer) {
   });
 
   io.on("connection", (socket) => {
-    const UserId = socket.data.userId;
+    const userId = socket.data.userId;
 
-    socket.join(UserId);
-    console.log(`User connected: ${UserId} `);
+    socket.join(userId);
+
+    if (!onlineUser.has(userId)) {
+      onlineUser.set(userId, new Set());
+    }
+    onlineUser.get(userId).add(socket.id);
+
+    socket.broadcast.emit("user_online", { userId });
+
+    socket.on("join", (conversationId) => {
+      socket.join(conversationId);
+      console.log(`User ${userId} join the conversation ${conversationId}`);
+    });
+
+    socket.on("leave", (conversationId) => {
+      socket.leave(conversationId);
+      console.log(`User ${userId} leaved the conversation ${conversationId}`);
+    });
+
+    socket.on("typing", ({ conversationId, isTyping }) => {
+      socket.to(conversationId).emit("user_typing", {
+        userId,
+        isTyping,
+      });
+    });
+
+    socket.on("check_online", (targetUserId, callback) => {
+      const isOnline =
+        onlineUser.has(targetUserId) && onlineUser.get(targetUserId).size > 0;
+
+      if (callback) callback({ userId: targetUserId, isOnline });
+    });
+
+    socket.on("disconnected", () => {
+      console.log(`User disconnected:${userId}`);
+
+      if (onlineUser.has(userId)) {
+        onlineUser.get(userId).delete(socket.id);
+
+        if (onlineUser.get(userId).size === 0) {
+          onlineUser.delete(userId);
+
+          socket.broadcast.emit("User offline", { userId });
+        }
+      }
+    });
   });
 
   return io;
+}
+
+export function isUserOnline(userId: string) {
+  return onlineUser.has(userId) && onlineUser.get(userId).size > 0;
 }
