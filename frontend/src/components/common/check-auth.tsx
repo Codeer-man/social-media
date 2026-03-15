@@ -1,66 +1,56 @@
 import type React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
-export type role = "user" | "admin";
-
-interface AuthProps {
-  isAuthenticated?: boolean;
-  user?: {
-    id: string;
-    email: string;
-    isEmailVerified: boolean;
-    role: "user" | "admin";
-  } | null;
-  children?: React.ReactNode;
+interface User {
+  role: "user" | "admin";
 }
+
+interface CheckAuthProps {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: User | null | undefined;
+  children: React.ReactNode;
+}
+
+const PUBLIC_ROUTES = [
+  "/auth/login",
+  "/auth/register",
+  "/user/created",
+  "/password/reset",
+  "/password/forget",
+];
 
 export default function CheckAuth({
   isAuthenticated,
-  children,
+  isLoading,
   user,
-}: AuthProps) {
-  const location = useLocation();
+  children,
+}: CheckAuthProps) {
+  const { pathname } = useLocation();
 
-  //auth route
-  if (
-    !isAuthenticated &&
-    !(
-      location.pathname.includes("/login") ||
-      location.pathname.includes("/register") ||
-      location.pathname.includes("/create")
-    )
-  ) {
-    return <Navigate to={"/auth/login"} />;
+  // Wait for auth to resolve
+  if (isLoading) return null;
+
+  const isPublic = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
+
+  // Not logged in → go to login
+  if (!isAuthenticated) {
+    return isPublic ? <>{children}</> : <Navigate to="/auth/login" replace />;
   }
 
-  //role based route
-  if (
-    isAuthenticated &&
-    (location.pathname.includes("login") ||
-      location.pathname.includes("register"))
-  ) {
-    if (user?.role === "admin") {
-      return <Navigate to="/admin/dashboard" />;
-    } else {
-      return <Navigate to="/" />;
-    }
+  // Logged in → can't go to login/register
+  if (pathname.startsWith("/auth")) {
+    return <Navigate to="/" replace />;
   }
 
-  //
-  if (
-    isAuthenticated &&
-    user?.role === "user" &&
-    location.pathname.includes("admin")
-  ) {
-    return <Navigate to={"/unauth-page"} />;
+  // Logged in as user → can't go to admin
+  if (user?.role === "user" && pathname.startsWith("/admin")) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  if (
-    isAuthenticated &&
-    user?.role === "admin" &&
-    !location.pathname.includes("admin")
-  ) {
-    return <Navigate to={"/admin/dashboard"} />;
+  // Logged in as admin → must stay in /admin
+  if (user?.role === "admin" && !pathname.startsWith("/admin")) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <>{children}</>;

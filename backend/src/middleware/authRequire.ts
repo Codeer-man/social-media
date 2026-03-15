@@ -40,6 +40,7 @@ export default async function authRequired(
       email: user.email,
       tokenVersion: user.tokenVersion,
       isEmailVerified: user.isEmailVerified,
+      role: user.role,
     };
 
     next();

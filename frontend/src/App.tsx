@@ -12,6 +12,8 @@ import UserCreated from "./pages/auth/userCreated";
 import ForgotPassword from "./pages/auth/forgotpassword";
 import ResetPassword from "./pages/auth/resetpassword";
 import AuthLayout from "./layout/authLayout";
+import ProfileLayout from "./layout/profileLayout";
+import CreateProfile from "./pages/profile/createProfile";
 
 export default function App() {
   const { isAuthenticated, isLoading, user } = useAppSelector(
@@ -23,23 +25,37 @@ export default function App() {
     dispatch(authCheck());
   }, [dispatch]);
 
-  // if (isLoading) return <p>Loading... test</p>;
+  if (isLoading) <p>Loading... test</p>;
 
   const router = createBrowserRouter([
     {
       path: "/",
       element: (
-        <CheckAuth isAuthenticated={isAuthenticated} user={user ?? undefined}>
+        <CheckAuth
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isLoading={isLoading}
+        >
           <RootLayout />
         </CheckAuth>
       ),
-      children: [],
+      children: [
+        {
+          //testing _________________________________
+          path: "friends",
+          element: <CreateProfile />,
+        },
+      ],
     },
     // * Auth
     {
       path: "/auth",
       element: (
-        <CheckAuth isAuthenticated={isAuthenticated} user={user ?? undefined}>
+        <CheckAuth
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isLoading={isLoading}
+        >
           <AuthLayout />
         </CheckAuth>
       ),
@@ -58,13 +74,6 @@ export default function App() {
         },
       ],
     },
-
-    //* user
-    //* admin
-    // {
-    //   path: "verify/email",
-    //   element: <VerifyEmail />,
-    // },
     {
       path: "/password",
       children: [
@@ -78,11 +87,33 @@ export default function App() {
         },
       ],
     },
-
-    // {
-    //   path: "*",
-    //   element: <ForgotPassword />,
-    // },
+    // create profile
+    {
+      path: "/profile",
+      element: (
+        <CheckAuth
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isLoading={isLoading}
+        >
+          <ProfileLayout />
+        </CheckAuth>
+      ),
+      children: [{ path: "create", element: <CreateProfile /> }],
+    },
+    // test admin
+    {
+      path: "/admin",
+      element: (
+        <CheckAuth
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isLoading={isLoading}
+        >
+          <RootLayout />
+        </CheckAuth>
+      ),
+    },
   ]);
 
   return (

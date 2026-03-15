@@ -6,7 +6,7 @@ const URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 //*initial state
 const initialState: AuthState = {
-  isLoading: false,
+  isLoading: true,
   isAuthenticated: false,
   user: null,
   error: null,
