@@ -28,7 +28,8 @@ export default function Register() {
       await dispatch(registerUser(data)).unwrap();
 
       reset();
-      navigate("/auth/create");
+      navigate("/user/created");
+      window.location.reload();
     } catch (error: any) {
       setError("root", {
         type: "server",

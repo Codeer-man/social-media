@@ -15,7 +15,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", authRequired, getDataHandler);
+router.get("/:userName", authRequired, getDataHandler);
 router.get("/:type", authRequired, fetchUserHandler);
 
 router.post("/create", authRequired, createProfileHandler);

@@ -159,6 +159,7 @@ export async function loginHandler(req: Request, res: Response) {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        profile: user.profile,
       },
     });
   } catch (error) {
@@ -203,7 +204,8 @@ export async function verifyEmailHandler(req: Request, res: Response) {
     });
 
     //redirect on develoment
-    return res.redirect(`${frontendUrl()}/create/profile`);
+    const link = `${frontendUrl()}/auth/login`;
+    res.redirect(link);
   } catch (error) {
     return res.status(500).json({
       message: "Internal server error",

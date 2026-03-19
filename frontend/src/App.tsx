@@ -68,11 +68,11 @@ export default function App() {
           path: "register",
           element: <Register />,
         },
-        {
-          path: "create",
-          element: <UserCreated />,
-        },
       ],
+    },
+    {
+      path: "user/created",
+      element: <UserCreated />,
     },
     {
       path: "/password",

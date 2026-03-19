@@ -36,7 +36,7 @@ export default async function authRequired(
 
     authReq.user = {
       id: user.id,
-      profile: profile?._id.toString() || undefined,
+      profile: profile?._id.toString() || null,
       email: user.email,
       tokenVersion: user.tokenVersion,
       isEmailVerified: user.isEmailVerified,

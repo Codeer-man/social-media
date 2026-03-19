@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema(
       require: true,
     },
     profile: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Profile",
+      type: Boolean,
+      default: false,
     },
     role: {
       type: String,
@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
       default: undefined,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", userSchema);

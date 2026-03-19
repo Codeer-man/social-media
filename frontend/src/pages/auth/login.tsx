@@ -26,8 +26,14 @@ export default function Login() {
 
   async function onSubmit(data: loginFormData) {
     try {
-      await dispatch(loginUser(data)).unwrap();
-      navigate("/");
+      const res = await dispatch(loginUser(data)).unwrap();
+
+      if (res.user.profile === null) {
+        navigate("/profile/create");
+      } else {
+        navigate("/");
+      }
+      window.location.reload();
     } catch (error: any) {
       setError("root", {
         type: "server",

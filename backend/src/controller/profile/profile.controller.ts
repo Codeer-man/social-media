@@ -9,10 +9,23 @@ export async function getDataHandler(req: Request, res: Response) {
   if (!authUser) {
     return res.status(404).json({ message: "auth user is requried" });
   }
+
+  const userName = req.params.userName as string;
+
+  if (!userName) {
+    return res.status(404).json({ message: "userName is required" });
+  }
+
   try {
-    const user = await Profile.findOne({ userId: authUser.id }).select(
+    const user = await Profile.findOne({ userName: userName }).select(
       "-blockedUsers -accountType",
     );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "user profile does not exist",
+      });
+    }
 
     return res.status(201).json({
       data: user,
@@ -75,6 +88,7 @@ export async function createProfileHandler(req: Request, res: Response) {
     });
 
     user.userName = userName;
+    user.profile = true;
     await user.save();
 
     return res.status(200).json({
