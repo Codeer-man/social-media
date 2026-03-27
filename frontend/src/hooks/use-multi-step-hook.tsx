@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   personalDetailSchema,
   personalInfoSchema,
+  type AllFormField,
 } from "../pages/profile/schema";
 import { type StepFormData } from "../pages/profile/schema";
 import { FaUserCircle } from "react-icons/fa";
@@ -9,14 +10,14 @@ import { FaUserCircle } from "react-icons/fa";
 const stepSchema = [personalInfoSchema, personalDetailSchema];
 
 export const steps = [
-  { id: "personal_I", name: "personal info", icon: <FaUserCircle /> },
-  { id: "personal_D", name: "personal detail", icon: "" },
+  { id: "personal_I", name: "personal info", icon: FaUserCircle },
+  { id: "personal_D", name: "personal detail", icon: FaUserCircle },
 ];
 
 export function useMultiStepForm() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isSubnitted, setIsSubmitted] = useState<boolean>(false);
-  const [formData, setFormData] = useState<Partial<StepFormData>>({});
+  const [formData, setFormData] = useState<Partial<AllFormField>>({});
 
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
@@ -39,7 +40,9 @@ export function useMultiStepForm() {
   };
 
   //handle subbmit
-  const submitForm = () => {
+  const submitForm = (data: StepFormData) => {
+    console.log(data, "final data");
+
     setIsSubmitted(true);
   };
 

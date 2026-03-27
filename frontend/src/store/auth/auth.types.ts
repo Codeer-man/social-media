@@ -6,6 +6,7 @@ export interface User {
   email: string;
   isEmailVerified: boolean;
   role: role;
+  profile: string;
 }
 // user response
 export interface AuthResponse {
