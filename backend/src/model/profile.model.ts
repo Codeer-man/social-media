@@ -41,6 +41,9 @@ const profileSchema = new mongoose.Schema(
     website: {
       type: String,
     },
+    DOB: {
+      type: Date,
+    },
     accountType: {
       type: String,
       enum: ["public", "private"],

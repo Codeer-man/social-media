@@ -2,12 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { type StepFormData } from "./schema";
 import { useMultiStepForm } from "../../hooks/use-multi-step-hook";
-import { useEffect } from "react";
 import { FaHouseUser } from "react-icons/fa";
 import { FaRegUser } from "react-icons/fa";
 import ProgessStep from "../../components/profile/progessStep";
-import { PersonalDetail, PersonalInfo } from "../../components/profile/steps";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
+import { PersonalDetail, PersonalInfo } from "../../components/profile/Steps";
 
 export default function CreateProfile() {
   // custom hook
@@ -16,7 +15,7 @@ export default function CreateProfile() {
     currentStep,
     isLastStep,
     isFirstStep,
-    isSubnitted,
+    // isSubnitted,
     steps,
 
     // function or methods
@@ -25,35 +24,51 @@ export default function CreateProfile() {
     goToNextStep,
     updateFormData,
     submitForm,
-    resetForm,
+    // resetForm,
   } = useMultiStepForm();
 
+  const fullSchema = getCurrentStepSchema();
   const {
     register,
     handleSubmit,
-    reset,
-    trigger,
     setError,
-    formState: { errors, isSubmitting },
+    trigger,
+    formState: { errors },
   } = useForm<StepFormData>({
-    resolver: zodResolver(getCurrentStepSchema()) as any,
+    resolver: zodResolver(fullSchema),
+    mode: "onChange",
+    defaultValues: formData,
+    shouldUnregister: false,
   });
 
   //to bring old data
-  useEffect(() => {
-    reset(formData);
-  }, [currentStep, formData, reset]);
+  //! not working and is bringin bug of no ref in input
+  // useEffect(() => {
+  //   reset(formData);
+  // }, [currentStep, formData, reset]);
 
+  //handle submit
   async function onNext(data: StepFormData) {
-    console.log(data, "data");
+    const isValid = await trigger();
+    if (!isValid) return; // Stop if validation fails
+
+    const updatedData = { ...formData, ...data };
+    updateFormData(updatedData);
+
     if (isLastStep) {
-      submitForm({ ...formData, ...data } as StepFormData);
+      try {
+        submitForm(updatedData);
+      } catch (error: any) {
+        setError("root", {
+          type: "server",
+          message: error,
+        });
+      }
     } else {
       goToNextStep();
     }
   }
-  console.log(currentStep, "step");
-  console.log(errors, "erros");
+
   return (
     <div className=" h-150 w-180 rounded-lg shadow-[0_0_25px_4px_rgba(0,0,0,0.08)] px-10 py-10  font-[inter]">
       {/*  info */}
@@ -70,53 +85,14 @@ export default function CreateProfile() {
         <p>Personal Info</p>
         <p>Personal Detail</p>
       </div>
-
-      {/* form  data */}
-      <form key={currentStep} onSubmit={handleSubmit(onNext)}>
-        {/* content */}
+      {/* form  */}
+      <form onSubmit={handleSubmit(onNext)}>
         <div>
-          {/* {currentStep === 0 && (
-            <PersonalInfo errors={errors} register={register} />
-          )} */}
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              className={`px-4 py-2.5 border rounded-lg text-sm outline-none transition focus:ring-2 focus:ring-amber-300 focus:border-transparent ${
-                errors.name ? "border-red-400 bg-red-50" : "border-gray-300"
-              }`}
-              type="text"
-              placeholder="you@example.com"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-0.5">
-                {errors.name.message}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">
-              userName
-            </label>
-            <input
-              className={`px-4 py-2.5 border rounded-lg text-sm outline-none transition focus:ring-2 focus:ring-amber-300 focus:border-transparent ${
-                errors.userName ? "border-red-400 bg-red-50" : "border-gray-300"
-              }`}
-              type="text"
-              placeholder="you@example.com"
-              {...register("userName")}
-            />
-            {errors.userName && (
-              <p className="text-red-500 text-xs mt-0.5">
-                {errors.userName.message}
-              </p>
-            )}
-          </div>
-
+          {currentStep === 0 && (
+            <PersonalInfo register={register} errors={errors} />
+          )}
           {currentStep === 1 && (
-            <PersonalDetail errors={errors} register={register} />
+            <PersonalDetail register={register} errors={errors} />
           )}
         </div>
 

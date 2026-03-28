@@ -1,103 +1,82 @@
-import FormField from "../common/form-field";
 import type { useForm } from "react-hook-form";
 import type { StepFormData } from "../../pages/profile/schema";
+import FormField from "../common/form-field";
 
-interface setProps {
-  errors: Record<string, { message?: string }>;
+interface StepProps {
   register: ReturnType<typeof useForm<StepFormData>>["register"];
-  setValue?: ReturnType<typeof useForm<StepFormData>>["setValue"];
+  errors: Record<string, { message?: string }>;
 }
 
-export function PersonalInfo({ errors, register }: setProps) {
+export function PersonalInfo({ register, errors }: StepProps) {
   return (
-    <div className="space-y-4 mt-5">
-      <h3 className=" text-3xl">Personal Information</h3>
-
-      <div className=" flex flex-col mt-2 ml-2">
-        <label className="text-sm font-medium text-gray-700">name</label>
-        <input
-          className={`px-4 py-2.5 border rounded-lg text-sm outline-none transition focus:ring-2 focus:ring-amber-300 focus:border-transparent ${
-            errors.name ? "border-red-400 bg-red-50" : "border-gray-300"
-          }`}
-          type="text"
-          {...register("name")}
-        />
-        {errors.name && (
-          <p className="text-red-500 text-xs mt-0.5">{errors.name.message}</p>
-        )}
-      </div>
-
-      {/* 
+    <div>
+      <h1>Personal Information</h1>
       <FormField
-        errors={errors}
-        register={register}
-        label="Name:"
-        type="text"
         id="name"
-      />
-      <FormField
-        errors={errors}
+        label="Name"
         register={register}
+        errors={errors}
         type="text"
-        label="UserName:"
-        id="userName"
       />
-     
       <FormField
-        errors={errors}
+        id="userName"
+        label="userName"
         register={register}
-        label="Image:"
-        id="avatar"
+        errors={errors}
+        type="text"
       />
-       */}
+      {/* image upload under development */}
+      <FormField
+        id="avatar"
+        label="Avatar"
+        register={register}
+        errors={errors}
+        type="text"
+      />
     </div>
   );
 }
 
-export function PersonalDetail({ errors, register }: setProps) {
+export function PersonalDetail({ register, errors }: StepProps) {
   return (
-    <div className="space-y-4 mt-5">
-      <h3 className=" text-3xl ">Personal Detail</h3>
-      <div className="">
-        <FormField
-          errors={errors}
-          register={register}
-          label="Bio:"
-          type="text"
-          id="bio"
-        />
-        <FormField
-          errors={errors}
-          register={register}
-          type="text"
-          label="Phone Number:"
-          id="phoneNo"
-        />
-        <div className=" grid grid-cols-2 gap-4">
-          <FormField
-            errors={errors}
-            register={register}
-            label="Location:"
-            type="text"
-            id="location"
-          />
-          <FormField
-            errors={errors}
-            register={register}
-            label="DOB:"
-            type="Date"
-            id="DOB"
-          />
-        </div>
+    <div>
+      <h1>Personal Detail</h1>
+      <FormField
+        id="bio"
+        label="Bio"
+        register={register}
+        errors={errors}
+        type="text"
+      />
+      <FormField
+        id="phoneNo"
+        label="Contact"
+        register={register}
+        errors={errors}
+        type="number"
+      />
 
-        <FormField
-          errors={errors}
-          register={register}
-          label="Website:"
-          type="text"
-          id="website"
-        />
-      </div>
+      <FormField
+        id="location"
+        label="Location"
+        register={register}
+        errors={errors}
+        type="text"
+      />
+      <FormField
+        id="DOB"
+        label="Date of birth"
+        register={register}
+        errors={errors}
+        type="text"
+      />
+      <FormField
+        id="website"
+        label="Website"
+        register={register}
+        errors={errors}
+        type="text"
+      />
     </div>
   );
 }

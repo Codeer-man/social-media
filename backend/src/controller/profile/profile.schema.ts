@@ -9,6 +9,7 @@ export const createProfileSchema = z.object({
   website: z.string().url().optional(),
   avatar: z.string().optional(),
   key: z.string().optional(),
+  DOB: z.string().optional(),
 });
 
 export const updateProfileSchema = z.object({
@@ -20,4 +21,5 @@ export const updateProfileSchema = z.object({
   website: z.string().url().optional(),
   avatar: z.string().optional(),
   accoutnType: z.enum(["public", "private"]).optional(),
+  DOB: z.string().optional(),
 });
