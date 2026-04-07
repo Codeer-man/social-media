@@ -1,12 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { type StepFormData } from "./schema";
+import { type AllFormField, type StepFormData } from "./schema";
 import { useMultiStepForm } from "../../hooks/use-multi-step-hook";
 import { FaHouseUser } from "react-icons/fa";
 import { FaRegUser } from "react-icons/fa";
 import ProgessStep from "../../components/profile/progessStep";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import { PersonalDetail, PersonalInfo } from "../../components/profile/Steps";
+import { useAppDispatch } from "../../store/hook";
+import { createProfile } from "../../store/profile";
 
 export default function CreateProfile() {
   // custom hook
@@ -27,7 +29,8 @@ export default function CreateProfile() {
     // resetForm,
   } = useMultiStepForm();
 
-  const fullSchema = getCurrentStepSchema();
+  const dispatch = useAppDispatch();
+
   const {
     register,
     handleSubmit,
@@ -35,7 +38,7 @@ export default function CreateProfile() {
     trigger,
     formState: { errors },
   } = useForm<StepFormData>({
-    resolver: zodResolver(fullSchema),
+    resolver: zodResolver(getCurrentStepSchema()),
     mode: "onChange",
     defaultValues: formData,
     shouldUnregister: false,
@@ -54,10 +57,11 @@ export default function CreateProfile() {
 
     const updatedData = { ...formData, ...data };
     updateFormData(updatedData);
+    console.log(data);
 
     if (isLastStep) {
       try {
-        submitForm(updatedData);
+        submitForm(data);
       } catch (error: any) {
         setError("root", {
           type: "server",

@@ -16,7 +16,7 @@ interface CheckAuthProps {
 const PUBLIC_ROUTES = [
   "/auth/login",
   "/auth/register",
-  "/user/created",
+  // "/user/created",
   "/password/reset",
   "/password/forget",
 ];

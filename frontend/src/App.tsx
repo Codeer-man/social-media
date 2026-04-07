@@ -91,13 +91,13 @@ export default function App() {
     {
       path: "/profile",
       element: (
-        // <CheckAuth
-        //   isAuthenticated={isAuthenticated}
-        //   user={user}
-        //   isLoading={isLoading}
-        // >
-        <ProfileLayout />
-        // </CheckAuth>
+        <CheckAuth
+          isAuthenticated={isAuthenticated}
+          user={user}
+          isLoading={isLoading}
+        >
+          <ProfileLayout />
+        </CheckAuth>
       ),
       children: [{ path: "create", element: <CreateProfile /> }],
     },
